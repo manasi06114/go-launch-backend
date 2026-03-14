@@ -78,7 +78,7 @@ export class AnalysisPipeline {
       scoring,
       executiveSummary,
       investorNarrative,
-      retrievedSourceUrls: mergedDocs.map((d) => d.url)
+      retrievedSources: mergedDocs
     });
   }
 

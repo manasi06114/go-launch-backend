@@ -11,6 +11,8 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z.string().default("gemini-2.0-flash"),
   GEMINI_EMBEDDING_MODEL: z.string().default("text-embedding-004"),
+  JWT_SECRET: z.string().min(16).default("change-this-dev-jwt-secret-123456"),
+  AUTH_TOKEN_TTL: z.string().default("7d"),
   SEARCH_LIMIT: z.coerce.number().default(5),
   REQUEST_TIMEOUT_MS: z.coerce.number().default(15000),
   ALLOWED_ORIGIN: z.string().default("*")

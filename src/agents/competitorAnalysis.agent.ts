@@ -2,6 +2,19 @@ import { CompetitorInsight, StartupIdeaInput, WebDocument } from "../types/domai
 import { SearchClient } from "../services/research/searchClient.js";
 import { ScraperService } from "../services/research/scraper.js";
 
+function buildCompetitorQueries(idea: StartupIdeaInput): string[] {
+  return [
+    `${idea.productName} alternatives competitors in ${idea.industry}`,
+    `${idea.proposedSolution} competitors for ${idea.targetAudience}`,
+    `${idea.problemStatement} software alternatives ${idea.industry}`,
+    `site:g2.com ${idea.productName} alternatives`,
+    `site:capterra.com ${idea.industry} software ${idea.targetAudience}`,
+    `site:producthunt.com ${idea.proposedSolution} ${idea.industry}`,
+    `site:crunchbase.com ${idea.industry} startups ${idea.targetAudience}`,
+    `site:linkedin.com companies ${idea.industry} ${idea.targetAudience}`
+  ];
+}
+
 function guessCompetitorNames(docs: WebDocument[]): string[] {
   const names = new Set<string>();
   for (const doc of docs) {
@@ -15,8 +28,7 @@ export class CompetitorAnalysisAgent {
   constructor(private readonly searchClient = new SearchClient(), private readonly scraper = new ScraperService()) {}
 
   async run(idea: StartupIdeaInput): Promise<{ insight: CompetitorInsight; docs: WebDocument[] }> {
-    const query = `${idea.productName} alternatives competitors in ${idea.industry}`;
-    const searchResults = await this.searchClient.search(query);
+    const searchResults = await this.searchClient.searchMany(buildCompetitorQueries(idea));
     const docs = await this.scraper.scrapeMany(searchResults);
 
     const competitorNames = guessCompetitorNames(docs);
@@ -35,7 +47,7 @@ export class CompetitorAnalysisAgent {
         saturationScore,
         notableCompetitors: competitorNames,
         positioningGaps,
-        evidence: docs.slice(0, 5).map((d) => `${d.title} (${d.url})`)
+        evidence: docs.slice(0, 5).map((d) => `${d.title} (${d.domain})`)
       },
       docs
     };

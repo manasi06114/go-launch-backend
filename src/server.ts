@@ -2,6 +2,7 @@ import { createApp } from "./app.js";
 import { env } from "./config/env.js";
 import { logger } from "./config/logger.js";
 import { closeMongo, connectMongo } from "./data/mongodb.js";
+import "./types/express.js";
 
 const app = createApp();
 

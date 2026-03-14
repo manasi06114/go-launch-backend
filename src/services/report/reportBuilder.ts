@@ -1,12 +1,4 @@
-import { AnalysisCharts, AnalysisReport, CompetitorInsight, MarketSignal, ReadinessInsight, RiskInsight, ScoringOutput, StartupIdeaInput } from "../../types/domain.js";
-
-function toDomain(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return "unknown";
-  }
-}
+import { AnalysisCharts, AnalysisReport, CompetitorInsight, MarketSignal, ReadinessInsight, RiskInsight, ScoringOutput, SourceReference, StartupIdeaInput, WebDocument } from "../../types/domain.js";
 
 export class ReportBuilder {
   build(input: {
@@ -19,10 +11,11 @@ export class ReportBuilder {
     scoring: ScoringOutput;
     executiveSummary: string;
     investorNarrative: string;
-    retrievedSourceUrls: string[];
+    retrievedSources: WebDocument[];
   }): AnalysisReport {
     const actionPlan = this.makeActionPlan(input.market, input.competition, input.readiness, input.risk, input.scoring);
-    const charts = this.makeCharts(input.market, input.competition, input.readiness, input.risk, input.scoring, input.retrievedSourceUrls);
+    const sources = this.makeSources(input.retrievedSources);
+    const charts = this.makeCharts(input.market, input.competition, input.readiness, input.risk, input.scoring, sources);
 
     return {
       requestId: input.requestId,
@@ -37,8 +30,26 @@ export class ReportBuilder {
       charts,
       actionPlan,
       investorNarrative: input.investorNarrative,
-      rawSources: input.retrievedSourceUrls
+      sources,
+      rawSources: sources.map((source) => source.url)
     };
+  }
+
+  private makeSources(docs: WebDocument[]): SourceReference[] {
+    const byUrl = new Map<string, SourceReference>();
+
+    for (const doc of docs) {
+      if (byUrl.has(doc.url)) continue;
+      byUrl.set(doc.url, {
+        title: doc.title,
+        url: doc.url,
+        domain: doc.domain,
+        platform: doc.platform,
+        snippet: doc.snippet
+      });
+    }
+
+    return Array.from(byUrl.values()).sort((left, right) => left.domain.localeCompare(right.domain));
   }
 
   private makeCharts(
@@ -47,12 +58,11 @@ export class ReportBuilder {
     readiness: ReadinessInsight,
     risk: RiskInsight,
     scoring: ScoringOutput,
-    sourceUrls: string[]
+    sources: SourceReference[]
   ): AnalysisCharts {
     const sourceMap = new Map<string, number>();
-    for (const url of sourceUrls) {
-      const domain = toDomain(url);
-      sourceMap.set(domain, (sourceMap.get(domain) ?? 0) + 1);
+    for (const source of sources) {
+      sourceMap.set(source.domain, (sourceMap.get(source.domain) ?? 0) + 1);
     }
 
     const scoreBreakdown: AnalysisCharts["scoreBreakdown"] = [
