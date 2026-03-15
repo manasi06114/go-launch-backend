@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: go-launch-backend
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB_NAME
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash
+      - key: GEMINI_EMBEDDING_MODEL
+        value: text-embedding-004
+      - key: SEARCH_LIMIT
+        value: 5
+      - key: REQUEST_TIMEOUT_MS
+        value: 15000
+      - key: ALLOWED_ORIGIN
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: AUTH_TOKEN_TTL
+        value: 7d
