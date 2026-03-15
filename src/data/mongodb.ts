@@ -25,6 +25,7 @@ export async function connectMongo(): Promise<Db> {
     await Promise.all([
       db.collection("analysis_reports").createIndex({ requestId: 1 }, { unique: true }),
       db.collection("analysis_feedback").createIndex({ requestId: 1 }),
+      db.collection("analysis_chats").createIndex({ requestId: 1, userId: 1 }, { unique: true }),
       db.collection("document_vectors").createIndex({ "metadata.requestId": 1 }),
       db.collection("user_accounts").createIndex({ email: 1 }, { unique: true })
     ]);

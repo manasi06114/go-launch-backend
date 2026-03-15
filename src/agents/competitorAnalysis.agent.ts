@@ -15,6 +15,51 @@ function buildCompetitorQueries(idea: StartupIdeaInput): string[] {
   ];
 }
 
+function buildCompetitorSeedResults(idea: StartupIdeaInput): Array<{ title: string; url: string; snippet: string }> {
+  const encodedIndustry = encodeURIComponent(idea.industry);
+
+  return [
+    {
+      title: "G2 software categories",
+      url: "https://www.g2.com/categories",
+      snippet: "Software comparison landscape"
+    },
+    {
+      title: "Capterra software categories",
+      url: "https://www.capterra.com/categories/",
+      snippet: "Competitor discovery and reviews"
+    },
+    {
+      title: "Product Hunt",
+      url: "https://www.producthunt.com/",
+      snippet: "New product launch competition"
+    },
+    {
+      title: "Crunchbase startups",
+      url: `https://www.crunchbase.com/discover/organization.companies/${encodedIndustry}`,
+      snippet: "Startup and competitor company landscape"
+    },
+    {
+      title: "LinkedIn companies",
+      url: "https://www.linkedin.com/company/",
+      snippet: "Company ecosystem and positioning"
+    }
+  ];
+}
+
+function withSeedResults(
+  searchResults: Array<{ title: string; url: string; snippet: string }>,
+  seedResults: Array<{ title: string; url: string; snippet: string }>
+): Array<{ title: string; url: string; snippet: string }> {
+  const byUrl = new Map<string, { title: string; url: string; snippet: string }>();
+  [...searchResults, ...seedResults].forEach((item) => {
+    if (!item.url || byUrl.has(item.url)) return;
+    byUrl.set(item.url, item);
+  });
+
+  return Array.from(byUrl.values());
+}
+
 function guessCompetitorNames(docs: WebDocument[]): string[] {
   const names = new Set<string>();
   for (const doc of docs) {
@@ -29,7 +74,7 @@ export class CompetitorAnalysisAgent {
 
   async run(idea: StartupIdeaInput): Promise<{ insight: CompetitorInsight; docs: WebDocument[] }> {
     const searchResults = await this.searchClient.searchMany(buildCompetitorQueries(idea));
-    const docs = await this.scraper.scrapeMany(searchResults);
+    const docs = await this.scraper.scrapeMany(withSeedResults(searchResults, buildCompetitorSeedResults(idea)));
 
     const competitorNames = guessCompetitorNames(docs);
     const competitorCount = Math.max(competitorNames.length, docs.length);

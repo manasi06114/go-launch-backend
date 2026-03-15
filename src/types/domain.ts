@@ -46,8 +46,16 @@ export type SourceReference = {
   snippet: string;
 };
 
+export type ResearchWebsite = {
+  domain: string;
+  websiteUrl: string;
+  platform: SourcePlatform;
+  iconUrl: string;
+};
+
 export type WebDocument = SourceReference & {
   content: string;
+  isScraped: boolean;
 };
 
 export type MarketSignal = {
@@ -107,6 +115,7 @@ export type AnalysisReport = {
   actionPlan: string[];
   investorNarrative: string;
   sources: SourceReference[];
+  sourceWebsites: ResearchWebsite[];
   rawSources: string[];
 };
 

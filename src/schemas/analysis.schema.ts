@@ -40,5 +40,11 @@ export const feedbackSchema = z.object({
     .optional()
 });
 
+export const reportChatSchema = z.object({
+  requestId: z.string().min(3),
+  message: z.string().min(2).max(2000)
+});
+
 export type AnalysisRequestDto = z.infer<typeof analysisRequestSchema>;
 export type FeedbackDto = z.infer<typeof feedbackSchema>;
+export type ReportChatDto = z.infer<typeof reportChatSchema>;

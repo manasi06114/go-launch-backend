@@ -1,4 +1,4 @@
-import { AnalysisCharts, AnalysisReport, CompetitorInsight, MarketSignal, ReadinessInsight, RiskInsight, ScoringOutput, SourceReference, StartupIdeaInput, WebDocument } from "../../types/domain.js";
+import { AnalysisCharts, AnalysisReport, CompetitorInsight, MarketSignal, ReadinessInsight, ResearchWebsite, RiskInsight, ScoringOutput, SourceReference, StartupIdeaInput, WebDocument } from "../../types/domain.js";
 
 export class ReportBuilder {
   build(input: {
@@ -15,6 +15,7 @@ export class ReportBuilder {
   }): AnalysisReport {
     const actionPlan = this.makeActionPlan(input.market, input.competition, input.readiness, input.risk, input.scoring);
     const sources = this.makeSources(input.retrievedSources);
+    const sourceWebsites = this.makeSourceWebsites(sources);
     const charts = this.makeCharts(input.market, input.competition, input.readiness, input.risk, input.scoring, sources);
 
     return {
@@ -31,14 +32,16 @@ export class ReportBuilder {
       actionPlan,
       investorNarrative: input.investorNarrative,
       sources,
+      sourceWebsites,
       rawSources: sources.map((source) => source.url)
     };
   }
 
   private makeSources(docs: WebDocument[]): SourceReference[] {
+    const scrapedDocs = docs.filter((doc) => doc.isScraped);
     const byUrl = new Map<string, SourceReference>();
 
-    for (const doc of docs) {
+    for (const doc of scrapedDocs) {
       if (byUrl.has(doc.url)) continue;
       byUrl.set(doc.url, {
         title: doc.title,
@@ -124,6 +127,23 @@ export class ReportBuilder {
       riskDistribution,
       sourceDistribution
     };
+  }
+
+  private makeSourceWebsites(sources: SourceReference[]): ResearchWebsite[] {
+    const byDomain = new Map<string, ResearchWebsite>();
+
+    for (const source of sources) {
+      if (!source.domain || source.domain === "unknown" || byDomain.has(source.domain)) continue;
+
+      byDomain.set(source.domain, {
+        domain: source.domain,
+        websiteUrl: `https://${source.domain}`,
+        platform: source.platform,
+        iconUrl: `https://www.google.com/s2/favicons?domain=${encodeURIComponent(source.domain)}&sz=64`
+      });
+    }
+
+    return Array.from(byDomain.values()).sort((left, right) => left.domain.localeCompare(right.domain));
   }
 
   private makeActionPlan(

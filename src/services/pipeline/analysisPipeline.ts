@@ -52,7 +52,7 @@ export class AnalysisPipeline {
       risk
     });
 
-    const executiveSummary = await this.llmService.summarize(
+    const executiveSummary = await this.llmService.summarizeExecutiveSummary(
       `Idea: ${input.idea.oneLiner}\nIndustry: ${input.idea.industry}\n` +
         `Market demand score: ${marketResult.signal.demandScore}\n` +
         `Competition saturation score: ${competitorResult.insight.saturationScore}\n` +
